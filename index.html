@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ayodeji Ogundijo</title>
+<meta name="description" content="Ayodeji Ogundijo is a senior Flutter developer and mobile team lead with 7+ years building enterprise apps for e-commerce, fintech, payroll and health.">
+<meta property="og:title" content="Ayodeji Ogundijo, senior Flutter developer and mobile team lead">
+<meta property="og:description" content="7+ years building enterprise mobile apps. Kaiglo, Moni, Paysteroid, ClockSureWise, Vibe360 and Icoba.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<script>
+  /* Runs before the page paints: remembered theme, and what to do when a store image fails to load. */
+  try {
+    var savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'light' || savedTheme === 'dark') {
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    }
+  } catch (err) {}
+  function shotFail(img) {
+    var shot = img.closest('.shot');
+    var app = img.closest('.app');
+    if (shot) shot.remove();
+    if (app && !app.querySelector('.shot')) app.classList.add('no-shots');
+  }
+</script>
+<style>
+/* Layout: a store listing for a developer. A cobalt listing header with a fan of phones,
+   a stat strip, one preview rail per app, a version history, an information table. */
+:root {
+  --bg: #EEF0F7;
+  --surface: #FFFFFF;
+  --surface-2: #E3E7F3;
+  --ink: #10142B;
+  --muted: #545A78;
+  --line: #D2D7E8;
+  --accent: #2A3BF2;
+  --accent-strong: #1B2AC9;
+  --accent-ink: #FFFFFF;
+  --pop: #FF6A3D;
+  --pop-ink: #2A0E03;
+  --hero: #2A3BF2;
+  --hero-ink: #FFFFFF;
+  --hero-soft: rgba(255, 255, 255, .8);
+  --hero-line: rgba(255, 255, 255, .3);
+  --bezel: #0B0E20;
+  --scrim: rgba(5, 6, 18, .8);
+  --lift: 0 30px 50px -22px rgba(4, 6, 30, .55);
+
+  --font-display: "Bricolage Grotesque", "Arial Narrow", system-ui, sans-serif;
+  --font-body: "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0B0E22;
+    --surface: #141835;
+    --surface-2: #1C2148;
+    --ink: #ECEEFB;
+    --muted: #A2A8CA;
+    --line: #2A3060;
+    --accent: #8D99FF;
+    --accent-strong: #AEB7FF;
+    --accent-ink: #0B0E22;
+    --pop: #FF8658;
+    --pop-ink: #2A0E03;
+    --hero: #1E2BC4;
+    --hero-ink: #FFFFFF;
+    --hero-soft: rgba(255, 255, 255, .8);
+    --hero-line: rgba(255, 255, 255, .28);
+    --bezel: #04050D;
+    --scrim: rgba(2, 3, 10, .86);
+    --lift: 0 30px 50px -22px rgba(0, 0, 0, .7);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0B0E22;
+  --surface: #141835;
+  --surface-2: #1C2148;
+  --ink: #ECEEFB;
+  --muted: #A2A8CA;
+  --line: #2A3060;
+  --accent: #8D99FF;
+  --accent-strong: #AEB7FF;
+  --accent-ink: #0B0E22;
+  --pop: #FF8658;
+  --pop-ink: #2A0E03;
+  --hero: #1E2BC4;
+  --hero-ink: #FFFFFF;
+  --hero-soft: rgba(255, 255, 255, .8);
+  --hero-line: rgba(255, 255, 255, .28);
+  --bezel: #04050D;
+  --scrim: rgba(2, 3, 10, .86);
+  --lift: 0 30px 50px -22px rgba(0, 0, 0, .7);
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+img { max-width: 100%; }
+a { color: inherit; }
+:focus-visible { outline: 3px solid var(--pop); outline-offset: 3px; border-radius: 6px; }
+.wrap { max-width: 1180px; margin-inline: auto; padding-inline: clamp(16px, 4vw, 40px); }
+.mono, .eyebrow, .pkg, .app-context, .role-dates { font-family: var(--font-mono); }
+
+/* ---------- header ---------- */
+.site {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 20;
+  background: color-mix(in srgb, var(--bg) 84%, transparent);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+.site .wrap { display: flex; align-items: center; gap: 16px; min-height: 68px; }
+.brand {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-family: var(--font-display); font-weight: 700; font-size: 1.05rem;
+  text-decoration: none; letter-spacing: -.01em;
+}
+.brand-mark {
+  width: 36px; height: 36px; border-radius: 11px; flex: none;
+  display: grid; place-items: center;
+  background: var(--accent); color: var(--accent-ink);
+  font-size: .85rem; font-weight: 800; letter-spacing: .02em;
+}
+.site nav { margin-left: auto; display: flex; gap: 2px; }
+.site nav a {
+  padding: 8px 13px; border-radius: 999px; text-decoration: none;
+  color: var(--muted); font-size: .95rem; font-weight: 500;
+}
+.site nav a:hover { color: var(--ink); background: var(--surface-2); }
+.actions { display: flex; align-items: center; gap: 10px; }
+.theme {
+  width: 40px; height: 40px; border-radius: 50%; flex: none;
+  display: grid; place-items: center; cursor: pointer;
+  border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+}
+.theme svg { width: 18px; height: 18px; display: block; }
+.talk {
+  padding: 10px 18px; border-radius: 999px; text-decoration: none;
+  background: var(--ink); color: var(--bg); font-weight: 600; font-size: .95rem; white-space: nowrap;
+}
+
+/* ---------- hero ---------- */
+.hero {
+  background: var(--hero); color: var(--hero-ink);
+  border-radius: clamp(22px, 3vw, 34px);
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr);
+  gap: clamp(16px, 3vw, 40px);
+  padding: clamp(26px, 5vw, 64px) clamp(22px, 5vw, 64px) 0;
+}
+.hero-copy {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 22px;
+  padding-bottom: clamp(30px, 5vw, 64px); min-width: 0;
+}
+.status {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 7px 14px; border-radius: 999px; border: 1px solid var(--hero-line);
+  font-family: var(--font-mono); font-size: .76rem; letter-spacing: .02em;
+}
+.status i { width: 8px; height: 8px; border-radius: 50%; background: var(--pop); flex: none; }
+h1 {
+  margin: 0;
+  font-family: var(--font-display); font-weight: 800;
+  font-size: clamp(2.5rem, 6.1vw, 4.9rem);
+  line-height: .98; letter-spacing: -.028em;
+  text-wrap: balance;
+}
+h1 em {
+  font-style: normal; display: inline-block;
+  background: var(--pop); color: var(--pop-ink);
+  padding: 0 .16em .05em; border-radius: .16em;
+  transform: rotate(-2deg);
+}
+.lede { margin: 0; max-width: 34em; font-size: 1.125rem; color: var(--hero-soft); }
+.hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 13px 22px; border-radius: 999px;
+  font-weight: 600; font-size: 1rem; text-decoration: none;
+}
+.btn-solid { background: var(--hero-ink); color: var(--hero); }
+.btn-ghost { box-shadow: inset 0 0 0 1.5px var(--hero-line); color: var(--hero-ink); }
+.btn-ghost:hover { box-shadow: inset 0 0 0 1.5px var(--hero-ink); }
+
+.fan {
+  position: relative; align-self: end;
+  width: 100%; max-width: 500px; margin-inline: auto;
+  aspect-ratio: 500 / 400;
+}
+.phone {
+  position: absolute; display: block; width: 40%; aspect-ratio: 9 / 19;
+  border: clamp(4px, .7vw, 7px) solid var(--bezel);
+  border-radius: clamp(16px, 2.8vw, 30px);
+  background: var(--surface-2); overflow: hidden;
+  box-shadow: var(--lift);
+  transition: translate .35s cubic-bezier(.2, .8, .2, 1);
+  animation: rise .9s cubic-bezier(.2, .8, .2, 1) both;
+}
+.phone img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: top center; }
+.phone-fallback {
+  position: absolute; inset: 0; display: grid; place-items: center; text-align: center;
+  font-family: var(--font-display); font-weight: 700; color: var(--ink);
+  font-size: clamp(.85rem, 1.6vw, 1.15rem);
+}
+.phone-left { left: 0; top: 17%; rotate: -9deg; animation-delay: .08s; }
+.phone-center { left: 30%; top: 0; z-index: 2; }
+.phone-right { right: 0; top: 17%; rotate: 9deg; animation-delay: .16s; }
+.phone:hover { translate: 0 -10px; }
+@keyframes rise { from { translate: 0 46px; } to { translate: 0 0; } }
+@media (min-width: 901px) {
+  /* On wide screens the fan grows past its column and the slab crops it. */
+  .fan { width: 122%; max-width: none; margin-inline: 0; aspect-ratio: 100 / 90; }
+  .phone-center { width: 44%; left: 28%; }
+  .phone-left, .phone-right { top: 20%; }
+}
+
+/* ---------- stat strip ---------- */
+.stats {
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 0; padding-block: clamp(28px, 4vw, 46px);
+  border-bottom: 1px solid var(--line);
+}
+.stat { display: flex; flex-direction: column; gap: 8px; padding-inline: clamp(12px, 2vw, 26px); border-left: 1px solid var(--line); }
+.stat:first-child { border-left: 0; padding-left: 0; }
+.stat dt { font-family: var(--font-mono); font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.stat dd { margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.stat-value {
+  font-family: var(--font-display); font-weight: 700;
+  font-size: clamp(1.9rem, 3.5vw, 2.9rem); line-height: 1; letter-spacing: -.02em;
+  font-variant-numeric: tabular-nums;
+}
+.stat-note { font-size: .9rem; line-height: 1.35; color: var(--muted); }
+
+/* ---------- sections ---------- */
+.section { padding-block: clamp(52px, 8vw, 100px) 0; scroll-margin-top: 70px; }
+.section-head { display: flex; flex-direction: column; gap: 12px; max-width: 46rem; margin-bottom: clamp(24px, 4vw, 40px); }
+.eyebrow { margin: 0; font-size: .75rem; letter-spacing: .12em; text-transform: uppercase; color: var(--accent-strong); }
+h2 {
+  margin: 0;
+  font-family: var(--font-display); font-weight: 700;
+  font-size: clamp(2rem, 4.4vw, 3.4rem); line-height: 1.02; letter-spacing: -.022em;
+  text-wrap: balance;
+}
+.section-head p:not(.eyebrow) { margin: 0; color: var(--muted); max-width: 60ch; }
+
+/* ---------- apps ---------- */
+.chips { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: clamp(20px, 3vw, 30px); }
+.chip {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 6px 16px 6px 6px; border-radius: 999px;
+  background: var(--surface); border: 1px solid var(--line);
+  text-decoration: none; font-weight: 600; font-size: .95rem;
+}
+.chip:hover { border-color: var(--accent); }
+.app-icon, .chip-icon {
+  position: relative; flex: none; overflow: hidden;
+  display: grid; place-items: center;
+  background: var(--accent); color: var(--accent-ink);
+  font-family: var(--font-display); font-weight: 800;
+}
+.app-icon { width: 64px; height: 64px; border-radius: 18px; font-size: 1.6rem; }
+.chip-icon { width: 32px; height: 32px; border-radius: 10px; font-size: .9rem; }
+.app-icon img, .chip-icon img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+.apps { display: flex; flex-direction: column; gap: clamp(20px, 3vw, 32px); }
+.app {
+  display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: clamp(20px, 2.6vw, 28px); overflow: hidden;
+  scroll-margin-top: 88px;
+}
+.app:nth-child(even) .rail-wrap { order: -1; }
+.app.no-shots { grid-template-columns: minmax(0, 1fr); }
+.app.no-shots .rail-wrap { display: none; }
+.app-body { display: flex; flex-direction: column; gap: 14px; min-width: 0; padding: clamp(22px, 3.4vw, 40px); }
+.app-head { display: flex; align-items: center; gap: 16px; }
+.app-title { min-width: 0; }
+.app h3 {
+  margin: 0;
+  font-family: var(--font-display); font-weight: 700;
+  font-size: clamp(1.6rem, 2.8vw, 2.2rem); line-height: 1.05; letter-spacing: -.018em;
+}
+.aka {
+  display: inline-block; vertical-align: middle; margin-left: 6px;
+  padding: 3px 10px; border-radius: 999px; background: var(--surface-2); color: var(--muted);
+  font-family: var(--font-mono); font-size: .72rem; font-weight: 500; letter-spacing: .03em;
+}
+.app-meta { margin: 4px 0 0; color: var(--muted); font-size: .95rem; }
+.app-context { margin: 0; font-size: .8rem; color: var(--muted); }
+.app-about { margin: 0; max-width: 60ch; }
+.facts { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.facts li {
+  padding: 5px 12px; border-radius: 999px; font-size: .85rem; font-weight: 600;
+  background: color-mix(in srgb, var(--accent) 13%, transparent); color: var(--accent-strong);
+}
+.app h4 {
+  margin: 6px 0 0;
+  font-family: var(--font-mono); font-weight: 500; font-size: .72rem;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--muted);
+}
+.part { margin: 0; padding-left: 1.15em; display: flex; flex-direction: column; gap: 6px; }
+.part li::marker, .role ul li::marker, .ways li::marker { color: var(--pop); }
+.app-foot {
+  margin-top: auto; padding-top: 12px;
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;
+}
+.stores { display: flex; flex-wrap: wrap; gap: 10px; }
+.store {
+  padding: 10px 18px; border-radius: 999px; text-decoration: none;
+  background: var(--ink); color: var(--bg); font-weight: 600; font-size: .95rem;
+}
+.store + .store { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--ink); }
+.pkg { font-size: .78rem; color: var(--muted); overflow-wrap: anywhere; }
+
+.rail-wrap {
+  min-width: 0; background: var(--surface-2);
+  display: flex; flex-direction: column; justify-content: center; gap: 12px;
+  padding-block: clamp(20px, 3vw, 32px);
+}
+.rail {
+  display: flex; gap: 22px; overflow-x: auto;
+  padding: 6px clamp(22px, 3vw, 34px) 12px;
+  scroll-snap-type: x proximity; scroll-padding-inline: clamp(22px, 3vw, 34px);
+  scrollbar-width: thin; scrollbar-color: var(--muted) transparent;
+}
+.shot {
+  flex: none; padding: 0; border: 0; cursor: zoom-in;
+  border-radius: 20px; overflow: hidden; background: var(--surface);
+  box-shadow: 0 0 0 5px var(--bezel);
+  scroll-snap-align: start;
+  transition: translate .25s ease;
+}
+.shot:hover { translate: 0 -4px; }
+.shot img { display: block; height: clamp(300px, 34vw, 420px); width: auto; min-width: 120px; max-width: none; }
+.rail-note { margin: 0; padding-inline: clamp(22px, 3vw, 34px); font-size: .8rem; color: var(--muted); }
+
+.also {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) minmax(0, 1.4fr); align-items: center;
+  gap: 12px clamp(14px, 2.4vw, 28px);
+  padding: clamp(18px, 2.6vw, 26px) clamp(22px, 3.4vw, 40px);
+  border: 1px dashed var(--line); border-radius: clamp(20px, 2.6vw, 28px);
+}
+.also .app-icon { width: 52px; height: 52px; border-radius: 15px; font-size: 1.3rem; background: var(--surface-2); color: var(--ink); }
+.also h3 { margin: 0; font-family: var(--font-display); font-weight: 700; font-size: 1.35rem; line-height: 1.1; }
+.also p { margin: 0; color: var(--muted); font-size: .95rem; }
+
+/* ---------- version history ---------- */
+.roles { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+.role {
+  display: grid; grid-template-columns: minmax(0, 220px) minmax(0, 1fr);
+  gap: clamp(14px, 3vw, 44px);
+  padding-block: clamp(22px, 3vw, 34px); border-bottom: 1px solid var(--line);
+}
+.role-dates { margin: 0; padding-top: .5em; font-size: .85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.role-main { min-width: 0; }
+.role h3 { margin: 0; font-family: var(--font-display); font-weight: 700; font-size: clamp(1.3rem, 2.2vw, 1.6rem); line-height: 1.15; letter-spacing: -.012em; }
+.role-org { margin: 4px 0 12px; font-weight: 600; color: var(--accent-strong); }
+.role ul { list-style: disc; margin: 0; padding-left: 1.15em; display: flex; flex-direction: column; gap: 6px; max-width: 68ch; }
+.now {
+  display: table; margin-top: 10px; padding: 3px 10px; border-radius: 999px;
+  background: var(--pop); color: var(--pop-ink);
+  font-family: var(--font-mono); font-size: .7rem; font-weight: 500; letter-spacing: .06em; text-transform: uppercase;
+}
+
+/* ---------- information ---------- */
+.kit { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: clamp(24px, 4vw, 56px); align-items: start; }
+.table { margin: 0; border-top: 1px solid var(--line); }
+.row {
+  display: grid; grid-template-columns: minmax(0, 210px) minmax(0, 1fr); gap: 8px 16px; align-items: start;
+  padding-block: 14px; border-bottom: 1px solid var(--line);
+}
+.row dt { color: var(--muted); font-size: .95rem; padding-top: 2px; }
+.row dd { margin: 0; display: flex; flex-wrap: wrap; gap: 6px 8px; }
+.row dd span {
+  padding: 4px 10px; border-radius: 8px; background: var(--surface); border: 1px solid var(--line);
+  font-family: var(--font-mono); font-size: .82rem;
+}
+.side { display: flex; flex-direction: column; gap: 20px; }
+.note { background: var(--surface); border: 1px solid var(--line); border-radius: 24px; padding: clamp(20px, 2.6vw, 28px); }
+.note h3 { margin: 8px 0 4px; font-family: var(--font-display); font-weight: 700; font-size: 1.35rem; line-height: 1.15; letter-spacing: -.012em; }
+.note p { margin: 0; color: var(--muted); }
+.ways { margin: 10px 0 0; padding-left: 1.15em; display: flex; flex-direction: column; gap: 6px; }
+
+/* ---------- contact ---------- */
+.contact {
+  margin-top: clamp(52px, 8vw, 100px); scroll-margin-top: 88px;
+  background: var(--hero); color: var(--hero-ink);
+  border-radius: clamp(22px, 3vw, 34px);
+  padding: clamp(28px, 5vw, 64px);
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(24px, 4vw, 56px); align-items: end;
+}
+.contact .eyebrow { color: var(--hero-soft); }
+.contact h2 { margin-top: 12px; }
+.contact-copy p:last-child { margin: 16px 0 0; color: var(--hero-soft); max-width: 40ch; }
+.reach { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--hero-line); }
+.reach li {
+  display: grid; grid-template-columns: 84px minmax(0, 1fr) auto; align-items: center; gap: 12px;
+  padding-block: 14px; border-bottom: 1px solid var(--hero-line);
+}
+.reach-label { font-family: var(--font-mono); font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; color: var(--hero-soft); }
+.reach a { font-weight: 600; font-size: 1.05rem; text-decoration: none; overflow-wrap: anywhere; }
+.reach a:hover { text-decoration: underline; text-underline-offset: 4px; }
+.copy {
+  padding: 7px 14px; border-radius: 999px; cursor: pointer;
+  border: 1px solid var(--hero-line); background: transparent; color: var(--hero-ink);
+  font: 500 .78rem var(--font-mono);
+}
+.copy:hover { border-color: var(--hero-ink); }
+
+footer.wrap { padding-block: 28px 40px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 24px; font-size: .85rem; color: var(--muted); }
+footer p { margin: 0; max-width: 60ch; }
+
+/* ---------- screenshot viewer ---------- */
+.viewer { border: 0; padding: 0; background: transparent; max-width: min(92vw, 460px); overflow: visible; }
+.viewer::backdrop { background: var(--scrim); }
+.viewer img { display: block; max-width: 100%; max-height: 86vh; border-radius: 24px; box-shadow: 0 0 0 6px var(--bezel); }
+.viewer-close {
+  position: absolute; top: -14px; right: -14px; width: 40px; height: 40px; border-radius: 50%;
+  border: 0; cursor: pointer; background: var(--pop); color: var(--pop-ink);
+  font: 700 1.1rem var(--font-body); display: grid; place-items: center;
+}
+
+/* ---------- narrow screens ---------- */
+@media (max-width: 900px) {
+  .hero { grid-template-columns: minmax(0, 1fr); }
+  .hero-copy { padding-bottom: 8px; }
+  .fan { max-width: 380px; }
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 26px; }
+  .stat:nth-child(odd) { border-left: 0; padding-left: 0; }
+  .app { grid-template-columns: minmax(0, 1fr); }
+  .app:nth-child(even) .rail-wrap { order: 0; }
+  .kit { grid-template-columns: minmax(0, 1fr); }
+  .contact { grid-template-columns: minmax(0, 1fr); align-items: start; }
+  .also { grid-template-columns: auto minmax(0, 1fr); }
+  .also-note { grid-column: 1 / -1; }
+}
+@media (max-width: 760px) {
+  .site nav { display: none; }
+  .actions { margin-left: auto; }
+  .role { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .role-dates { padding-top: 0; }
+  .row { grid-template-columns: minmax(0, 1fr); }
+  .reach li { grid-template-columns: minmax(0, 1fr) auto; }
+  .reach-label { grid-column: 1 / -1; }
+}
+@media (max-width: 420px) {
+  .brand-name { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .phone { animation: none; transition: none; }
+  .shot { transition: none; }
+}
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="Ayodeji Ogundijo, back to top">
+      <span class="brand-mark" aria-hidden="true">AO</span>
+      <span class="brand-name">Ayodeji Ogundijo</span>
+    </a>
+    <nav aria-label="Sections">
+      <a href="#apps">Apps</a>
+      <a href="#experience">Experience</a>
+      <a href="#toolkit">Toolkit</a>
+      <a href="#contact">Contact</a>
+    </nav>
+    <div class="actions">
+      <button class="theme" id="theme-toggle" type="button" aria-label="Switch colour theme">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg>
+      </button>
+      <a class="talk" href="#contact">Get in touch</a>
+    </div>
+  </div>
+</header>
+
+<main class="wrap" id="top">
+
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="hero-copy">
+      <h1 id="hero-title">Mobile apps that stay <em>stable</em> at scale.</h1>
+      <p class="lede">I'm Ayodeji Ogundijo, a senior Flutter developer with 7+ years building and leading enterprise mobile apps across e-commerce, fintech, payroll and health. I care most about performance, low crash rates and clean store releases.</p>
+      <div class="hero-actions">
+        <a class="btn btn-solid" href="#apps">See the apps</a>
+        <a class="btn btn-ghost" href="#experience">Work history</a>
+      </div>
+    </div>
+    <div class="fan">
+      <a class="phone phone-left" href="#moni" aria-label="Moni, jump to the app"><span class="phone-fallback">Moni</span><img src="https://play-lh.googleusercontent.com/CBW_88XKCjRVgLLfat_nwc_TqT3mifYH7qxO_X6MtBk-KDJtr6mMOox7YVYUXTrmgPbg6TXPFWvEJ70lc9BACg=w480-h960" alt="" onerror="this.remove()"></a><a class="phone phone-center" href="#kaiglo" aria-label="Kaiglo, jump to the app"><span class="phone-fallback">Kaiglo</span><img src="https://play-lh.googleusercontent.com/IGep4qs7j_vim8oDvBW3Shgd7NjyAVCln0bdubV2Cn3QaJI2AZsdYnWYuWJ175Yezjr11Mu86LONU7ez4Fz-M7g=w480-h960" alt="" onerror="this.remove()"></a><a class="phone phone-right" href="#paysteroid" aria-label="Paysteroid, jump to the app"><span class="phone-fallback">Paysteroid</span><img src="https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/ee/26/9a/ee269a51-5ebb-f505-7c3f-917637f76963/9.png/600x1300bb.jpg" alt="" onerror="this.remove()"></a>
+    </div>
+  </section>
+
+  <dl class="stats" aria-label="Career figures">
+    <div class="stat"><dt>Experience</dt><dd><span class="stat-value">7+</span><span class="stat-note">years building mobile apps</span></dd></div><div class="stat"><dt>Downloads</dt><dd><span class="stat-value">200K+</span><span class="stat-note">across all the apps I’ve shipped</span></dd></div><div class="stat"><dt>Launches</dt><dd><span class="stat-value">6+</span><span class="stat-note">apps live on Google Play and the App Store</span></dd></div><div class="stat"><dt>Delivery</dt><dd><span class="stat-value">95%</span><span class="stat-note">of projects shipped on time</span></dd></div>
+  </dl>
+
+  <section class="section" id="apps" aria-labelledby="apps-title">
+    <div class="section-head">
+      <p class="eyebrow">Apps</p>
+      <h2 id="apps-title">Work that reached the stores.</h2>
+      <p>Six apps across shopping, money, payroll, attendance, health and community. Icons and screenshots load straight from each store listing.</p>
+    </div>
+    <div class="chips" aria-label="Jump to an app">
+      <a class="chip" href="#kaiglo"><span class="chip-icon" aria-hidden="true"><span class="mono-letter">K</span><img src="https://play-lh.googleusercontent.com/m0F2A9BfqOUjqLRclkHaL3c9VlvMmNYWV1UZvrR47wl6-168oOK8MVz9KHaNnV1d4Iylqwkm3uFul7RJXg4A=w240-h240" alt="" width="120" height="120" onerror="this.remove()"></span><span>Kaiglo</span></a><a class="chip" href="#moni"><span class="chip-icon" aria-hidden="true"><span class="mono-letter">M</span><img src="https://play-lh.googleusercontent.com/ji4wB-z4QQ6QeVQdPEim7cAnURr_X9OIlcIOdr6ygYEpOwruKRIY7pa9yOZFnp3WGL1mLJ5yl_j8bi-q4OZpHQ=w240-h240" alt="" width="120" height="120" onerror="this.remove()"></span><span>Moni</span></a><a class="chip" href="#paysteroid"><span class="chip-icon" aria-hidden="true"><span class="mono-letter">P</span><img src="https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/a9/51/07/a951079d-b7c9-2f32-c121-51be41c38dca/AppIcon-0-0-1x_U007emarketing-0-11-0-85-220.png/256x256bb.jpg" alt="" width="120" height="120" onerror="this.remove()"></span><span>Paysteroid</span></a><a class="chip" href="#clocksurewise"><span class="chip-icon" aria-hidden="true"><span class="mono-letter">C</span><img src="https://play-lh.googleusercontent.com/2q6QWtxEiR1VIWA4ToOubjzWWRbmHwT8FSzAHTIfOS9m0XO7SNQOTR0Juzfd4N0K0fxjqsAaRITWoIibEg8t=w240-h240" alt="" width="120" height="120" onerror="this.remove()"></span><span>ClockSureWise</span></a><a class="chip" href="#vibe360"><span class="chip-icon" aria-hidden="true"><span class="mono-letter">V</span><img src="https://play-lh.googleusercontent.com/OHfj79c5uLXzWHELny156YrRN3wpF8P4PMpVC_gIH9mAo6YS45rV2ijn037JQx5Cse8FN_h91c6whOy0c2YooA=w240-h240" alt="" width="120" height="120" onerror="this.remove()"></span><span>Vibe360</span></a><a class="chip" href="#icoba"><span class="chip-icon" aria-hidden="true"><span class="mono-letter">I</span><img src="https://play-lh.googleusercontent.com/QLaOBVbxHHZkoK6udkkWkoxvQQ7i9qg4zcnFH2YUimJm0RoKFg9zfTxZa6R1zqWo4URst7gl_B-WreQMxmTM4uM=w240-h240" alt="" width="120" height="120" onerror="this.remove()"></span><span>Icoba</span></a>
+    </div>
+    <div class="apps">
+      
+    <article class="app" id="kaiglo">
+      <div class="app-body">
+        <header class="app-head">
+          <span class="app-icon" aria-hidden="true"><span class="mono-letter">K</span><img src="https://play-lh.googleusercontent.com/m0F2A9BfqOUjqLRclkHaL3c9VlvMmNYWV1UZvrR47wl6-168oOK8MVz9KHaNnV1d4Iylqwkm3uFul7RJXg4A=w240-h240" alt="" width="120" height="120" onerror="this.remove()"></span>
+          <div class="app-title">
+            <h3>Kaiglo</h3>
+            <p class="app-meta">E-commerce · Android · iOS</p>
+          </div>
+        </header>
+        <p class="app-about">A Nigerian shopping marketplace with an in-app wallet, group purchases, flash sales, product reviews and order tracking.</p>
+        <ul class="facts"><li>100K+ downloads</li></ul>
+        <h4>My part</h4>
+        <ul class="part"><li>Built the e-commerce app, which has passed 100k downloads across Google Play and the App Store.</li><li>Maintained and improved core application stability in production.</li><li>Refined in-app messages, alerts and visual cues, which reduced customer support inquiries.</li></ul>
+        <div class="app-foot">
+          <div class="stores"><a class="store" href="https://play.google.com/store/apps/details?id=com.kiaglo" target="_blank" rel="noopener">Google Play<span aria-hidden="true"> ↗</span></a><a class="store" href="https://apps.apple.com/us/app/kaiglo/id1606814413" target="_blank" rel="noopener">App Store<span aria-hidden="true"> ↗</span></a></div>
+          <code class="pkg">com.kiaglo</code>
+        </div>
+      </div>
+      <div class="rail-wrap">
+        <div class="rail" tabindex="0" role="group" aria-label="Kaiglo screenshots from Google Play">
+          <button class="shot" type="button" data-full="https://play-lh.googleusercontent.com/IGep4qs7j_vim8oDvBW3Shgd7NjyAVCln0bdubV2Cn3QaJI2AZsdYnWYuWJ175Yezjr11Mu86LONU7ez4Fz-M7g=w900-h1800" aria-label="Enlarge Kaiglo screenshot 1"><img src="https://play-lh.googleusercontent.com/IGep4qs7j_vim8oDvBW3Shgd7NjyAVCln0bdubV2Cn3QaJI2AZsdYnWYuWJ175Yezjr11Mu86LONU7ez4Fz-M7g=w480-h960" alt="Kaiglo screenshot 1" loading="lazy" onerror="shotFail(this)"></button><button class="shot" type="button" data-full="https://play-lh.googleusercontent.com/yYrpj0XzrqE6_lPg1Emr3t9C7731w44hX40JpoVoxqQ3I9u79W0oSR3pVEa62byImg45ydCu66KxVhpdM9UJYdM=w900-h1800" aria-label="Enlarge Kaiglo screenshot 2"><img src="https://play-lh.googleusercontent.com/yYrpj0XzrqE6_lPg1Emr3t9C7731w44hX40JpoVoxqQ3I9u79W0oSR3pVEa62byImg45ydCu66KxVhpdM9UJYdM=w480-h960" alt="Kaiglo screenshot 2" loading="lazy" onerror="shotFail(this)"></button><button class="shot" type="button" data-full="https://play-lh.googleusercontent.com/d99pvOBGFhxRijLAgij-1GZb2DH5c1Id1_8jjT5XW4Ir50eb9tzE6_Mv2koU9Wr1CBO038-8_AaOp8sElOwPUGY=w900-h1800" aria-label="Enlarge Kaiglo screenshot 3"><img src="https://play-lh.googleusercontent.com/d99pvOBGFhxRijLAgij-1GZb2DH5c1Id1_8jjT5XW4Ir50eb9tzE6_Mv2koU9Wr1CBO038-8_AaOp8sElOwPUGY=w480-h960" alt="Kaiglo screenshot 3" loading="lazy" onerror="shotFail(this)"></button><button class="shot" type="button" data-full="https://play-lh.googleusercontent.com/9ZZy2Q1lYkuQDjzYhgWjwCX6mNc6QX_vapmiiSuPaCjd3xFocico_8jm8n9UVgJH8UiKd2D_XzZ-yJ4LgWGD=w900-h1800" aria-label="Enlarge Kaiglo screenshot 4"><img src="https://play-lh.googleusercontent.com/9ZZy2Q1lYkuQDjzYhgWjwCX6mNc6QX_vapmiiSuPaCjd3xFocico_8jm8n9UVgJH8UiKd2D_XzZ-yJ4LgWGD=w480-h960" alt="Kaiglo screenshot 4" loading="lazy" onerror="shotFail(this)"></button><button class="shot" type="button" data-full="https://play-lh.googleusercontent.com/e0kndpQiK7CgigWcA4933r3qJ8moazeTve1PDbCWZAMyk_-REO-SN-CXHO_T69KZOfAFdjdN0_AWWGUh_qP5KA=w900-h1800" aria-label="Enlarge Kaiglo screenshot 5"><img src="https://play-lh.googleusercontent.com/e0kndpQiK7CgigWcA4933r3qJ8moazeTve1PDbCWZAMyk_-REO-SN-CXHO_T69KZOfAFdjdN0_AWWGUh_qP5KA=w480-h960" alt="Kaiglo screenshot 5" loading="lazy" onerror="shotFail(this)"></button>
+        </div>
+        <p class="rail-note">Screenshots from Google Play. Select one to enlarge.</p>
+      </div>
+    </article>
+    <article class="app" id="moni">
+      <div class="app-body">
+        <header class="app-head">
+          <span class="app-icon" aria-hidden="true"><span class="mono-letter">M</span><img src="https://play-lh.googleusercontent.com/ji4wB-z4QQ6QeVQdPEim7cAnURr_X9OIlcIOdr6ygYEpOwruKRIY7pa9yOZFnp3WGL1mLJ5yl_j8bi-q4OZpHQ=w240-h240" alt="" width="120" height="120" onerror="this.remove()"></span>
+          <div class="app-title">
+            <h3>Moni <span class="aka">now Rank</span></h3>
+            <p class="app-meta">Fintech · Android · iOS</p>
+          </div>
+        </header>
+        <p class="app-about">Savings, bank transfers, airtime and bill payments in one app. Moni has since been rebranded as Rank, so the listing and screenshots show the product as it is today.</p>
+        <ul class="facts"><li>−45% crash rate</li><li>50K+ installs on Google Play</li></ul>
+        <h4>My part</h4>
+        <ul class="part"><li>Stabilised the version 1 app, resolving critical performance and reliability issues and cutting crash rates by 45%.</li><li>Built wallet and savings features that improved repayment success rate by 40%.</li><li>Led the mobile team that delivered version 2, which passed 40,000 downloads within six months.</li><li>Built peer-to-peer transfers. 47% of active users used the feature in its first three months.</li></ul>
+        <div class="app-foot">
+          <div class="stores"><a class="store" href="https://play.google.com/store/apps/details?id=com.rank.moni&amp;hl=en" target="_blank" rel="noopener">Google Play<span aria-hidden="true"> ↗</span></a><a class="store" href="https://apps.apple.com/us/app/moni-africa/id1578727095" target="_blank" rel="noopener">App Store<span aria-hidden="true"> ↗</span></a></div>
+          <code class="pkg">com.rank.moni</code>
+        </div>
+      </div>
+      <div class="rail-wrap">
+        <div class="rail" tabindex="0" role="group" aria-label="Moni screenshots from Google Play">
+          <button class="shot" type="button" data-full="https://play-lh.googleusercontent.com/CBW_88XKCjRVgLLfat_nwc_TqT3mifYH7qxO_X6MtBk-KDJtr6mMOox7YVYUXTrmgPbg6TXPFWvEJ70lc9BACg=w900-h1800" aria-label="Enlarge Moni screenshot 1"><img src="https://play-lh.googleusercontent.com/CBW_88XKCjRVgLLfat_nwc_TqT3mifYH7qxO_X6MtBk-KDJtr6mMOox7YVYUXTrmgPbg6TXPFWvEJ70lc9BACg=w480-h960" alt="Moni screenshot 1" loading="lazy" onerror="shotFail(this)"></button><button class="shot" type="button" data-full="https://play-lh.googleusercontent.com/sQp3r5c7DqWRZlDUZmAjekdnlD0gALcr7xiQBMkZHDjC9qjFjkaeAVcm6q44NG5nPQg-yO3fDqpZvoPuf7Ro=w900-h1800" aria-label="Enlarge Moni screenshot 2"><img src="https://play-lh.googleusercontent.com/sQp3r5c7DqWRZlDUZmAjekdnlD0gALcr7xiQBMkZHDjC9qjFjkaeAVcm6q44NG5nPQg-yO3fDqpZvoPuf7Ro=w480-h960" alt="Moni screenshot 2" loading="lazy" onerror="shotFail(this)"></button><button class="shot" type="button" data-full="https://play-lh.googleusercontent.com/Bqd6eq7EWdO6klCrg8S_tJAlEHIfBK8bWrdvtcKUl1c0uFm34-19_CHv4G1gCOKy15IR6ZFR7KkKmozZ9W8nEg=w900-h1800" aria-label="Enlarge Moni screenshot 3"><img src="https://play-lh.googleusercontent.com/Bqd6eq7EWdO6klCrg8S_tJAlEHIfBK8bWrdvtcKUl1c0uFm34-19_CHv4G1gCOKy15IR6ZFR7KkKmozZ9W8nEg=w480-h960" alt="Moni screenshot 3" loading="lazy" onerror="shotFail(this)"></button><button class="shot" type="button" data-full="https://play-lh.googleusercontent.com/dJJL551zMcHyIrxEyn54gr3O7oNeQQz4YgX2E7y2pIW_7M1NE6kQttOlSdIbgMsFDWp11PiynglDQcyNs2FFZTY=w900-h1800" aria-label="Enlarge Moni screenshot 4"><img src="https://play-lh.googleusercontent.com/dJJL551zMcHyIrxEyn54gr3O7oNeQQz4YgX2E7y2pIW_7M1NE6kQttOlSdIbgMsFDWp11PiynglDQcyNs2FFZTY=w480-h960" alt="Moni screenshot 4" loading="lazy" onerror="shotFail(this)"></button><button class="shot" type="button" data-full="https://play-lh.googleusercontent.com/p0kwoxAckUfcrY-InqPfn-lOEIcPu4OQ1BdRFVmJ1TF8hZVLNh7sdnmOlRCE8WU24FapM-u6F5F-K0znRtUtIg=w900-h1800" aria-label="Enlarge Moni screenshot 5"><img src="https://play-lh.googleusercontent.com/p0kwoxAckUfcrY-InqPfn-lOEIcPu4OQ1BdRFVmJ1TF8hZVLNh7sdnmOlRCE8WU24FapM-u6F5F-K0znRtUtIg=w480-h960" alt="Moni screenshot 5" loading="lazy" onerror="shotFail(this)"></button>
+        </div>
+        <p class="rail-note">Screenshots from Google Play. Select one to enlarge.</p>
+      </div>
+    </article>
+    <article class="app" id="paysteroid">
+      <div class="app-body">
+        <header class="app-head">
+          <span class="app-icon" aria-hidden="true"><span class="mono-letter">P</span><img src="https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/a9/51/07/a951079d-b7c9-2f32-c121-51be41c38dca/AppIcon-0-0-1x_U007emarketing-0-11-0-85-220.png/256x256bb.jpg" alt="" width="120" height="120" onerror="this.remove()"></span>
+          <div class="app-title">
+            <h3>Paysteroid</h3>
+            <p class="app-meta">Payroll · Android · iOS</p>
+          </div>
+        </header>
+        <p class="app-about">Payroll management for businesses: automated salary runs with tax deductions, employee records, attendance and leave tracking, digital payslips and payroll reports.</p>
+        <ul class="facts"><li>4.9 from 14 ratings on the App Store</li></ul>
+        <h4>In the app</h4>
+        <ul class="part"><li>One-tap salary calculations, bulk payments and scheduled payroll runs.</li><li>Employee self-service for payslips and documents.</li><li>Payroll dashboards with exports to PDF, Excel and CSV.</li></ul>
+        <div class="app-foot">
+          <div class="stores"><a class="store" href="https://play.google.com/store/apps/details?id=com.sbsc.paysteroid" target="_blank" rel="noopener">Google Play<span aria-hidden="true"> ↗</span></a><a class="store" href="https://apps.apple.com/ng/app/paysteroid/id6753876676" target="_blank" rel="noopener">App Store<span aria-hidden="true"> ↗</span></a></div>
+          <code class="pkg">com.sbsc.paysteroid</code>
+        </div>
+      </div>
+      <div class="rail-wrap">
+        <div class="rail" tabindex="0" role="group" aria-label="Paysteroid screenshots from the App Store">
+          <button class="shot" type="button" data-full="https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/ee/26/9a/ee269a51-5ebb-f505-7c3f-917637f76963/9.png/1000x2200bb.jpg" aria-label="Enlarge Paysteroid screenshot 1"><img src="https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/ee/26/9a/ee269a51-5ebb-f505-7c3f-917637f76963/9.png/600x1300bb.jpg" alt="Paysteroid screenshot 1" loading="lazy" onerror="shotFail(this)"></button><button class="shot" type="button" data-full="https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/e9/95/62/e99562cf-014d-fd92-af5e-79ab194a9e7b/10.png/1000x2200bb.jpg" aria-label="Enlarge Paysteroid screenshot 2"><img src="https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/e9/95/62/e99562cf-014d-fd92-af5e-79ab194a9e7b/10.png/600x1300bb.jpg" alt="Paysteroid screenshot 2" loading="lazy" onerror="shotFail(this)"></button><button class="shot" type="button" data-full="https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/62/06/dd/6206dd95-f4f8-3454-0adb-8db0b93d1597/11.png/1000x2200bb.jpg" aria-label="Enlarge Paysteroid screenshot 3"><img src="https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/62/06/dd/6206dd95-f4f8-3454-0adb-8db0b93d1597/11.png/600x1300bb.jpg" alt="Paysteroid screenshot 3" loading="lazy" onerror="shotFail(this)"></button><button class="shot" type="button" data-full="https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/86/96/21/86962181-65fd-1e0d-d291-474336caf625/7.png/1000x2200bb.jpg" aria-label="Enlarge Paysteroid screenshot 4"><img src="https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/86/96/21/86962181-65fd-1e0d-d291-474336caf625/7.png/600x1300bb.jpg" alt="Paysteroid screenshot 4" loading="lazy" onerror="shotFail(this)"></button><button class="shot" type="button" data-full="https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/ed/26/79/ed267908-0e38-33fb-c78c-55415a24b6b9/8.png/1000x2200bb.jpg" aria-label="Enlarge Paysteroid screenshot 5"><img src="https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/ed/26/79/ed267908-0e38-33fb-c78c-55415a24b6b9/8.png/600x1300bb.jpg" alt="Paysteroid screenshot 5" loading="lazy" onerror="shotFail(this)"></button>
+        </div>
+        <p class="rail-note">Screenshots from the App Store. Select one to enlarge.</p>
+      </div>
+    </article>
+    <article class="app" id="clocksurewise">
+      <div class="app-body">
+        <header class="app-head">
+          <span class="app-icon" aria-hidden="true"><span class="mono-letter">C</span><img src="https://play-lh.googleusercontent.com/2q6QWtxEiR1VIWA4ToOubjzWWRbmHwT8FSzAHTIfOS9m0XO7SNQOTR0Juzfd4N0K0fxjqsAaRITWoIibEg8t=w240-h240" alt="" width="120" height="120" onerror="this.remove()"></span>
+          <div class="app-title">
+            <h3>ClockSureWise</h3>
+            <p class="app-meta">Attendance · Android · iOS</p>
+          </div>
+        </header>
+        <p class="app-about">Geofenced attendance and time tracking for professionals. Staff clock in and out only from verified locations, so every record can be trusted.</p>
+        <h4>In the app</h4>
+        <ul class="part"><li>Location verification on every clock-in and clock-out.</li><li>Geofencing that ties attendance to approved work sites.</li><li>Secure time tracking with each person's records in one place.</li></ul>
+        <div class="app-foot">
+          <div class="stores"><a class="store" href="https://play.google.com/store/apps/details?id=com.sbsc.clocksurewise" target="_blank" rel="noopener">Google Play<span aria-hidden="true"> ↗</span></a><a class="store" href="https://apps.apple.com/us/app/clocksurewise/id6792327916" target="_blank" rel="noopener">App Store<span aria-hidden="true"> ↗</span></a></div>
+          <code class="pkg">com.sbsc.clocksurewise</code>
+        </div>
+      </div>
+      <div class="rail-wrap">
+        <div class="rail" tabindex="0" role="group" aria-label="ClockSureWise screenshots from Google Play">
+          <button class="shot" type="button" data-full="https://play-lh.googleusercontent.com/RCFkdKb-2CSXKw079rJvr4Yin1LqpXyPwJh97xTXHA4u4s89TbFmTSmstwQh7inOXCMYn7P9jWwGX7uJ0-d6=w900-h1800" aria-label="Enlarge ClockSureWise screenshot 1"><img src="https://play-lh.googleusercontent.com/RCFkdKb-2CSXKw079rJvr4Yin1LqpXyPwJh97xTXHA4u4s89TbFmTSmstwQh7inOXCMYn7P9jWwGX7uJ0-d6=w480-h960" alt="ClockSureWise screenshot 1" loading="lazy" onerror="shotFail(this)"></button><button class="shot" type="button" data-full="https://play-lh.googleusercontent.com/XDRqKSiu7MuJcMcpd2MhVcxsMrRVG7kg3v0RmdAlRhKo-jghZt3ZuKvpY9ASk0zFsF6Carrwcr7uZ5g1uQGVLA=w900-h1800" aria-label="Enlarge ClockSureWise screenshot 2"><img src="https://play-lh.googleusercontent.com/XDRqKSiu7MuJcMcpd2MhVcxsMrRVG7kg3v0RmdAlRhKo-jghZt3ZuKvpY9ASk0zFsF6Carrwcr7uZ5g1uQGVLA=w480-h960" alt="ClockSureWise screenshot 2" loading="lazy" onerror="shotFail(this)"></button><button class="shot" type="button" data-full="https://play-lh.googleusercontent.com/Ko1_P7XdIaS4CdA501ALnhdmyP4Cx-DrTu01Nlnu9MnQhcKiSJCg_wrsEUjOLphBO-kyv6MyJE-V9_jbYfeyizI=w900-h1800" aria-label="Enlarge ClockSureWise screenshot 3"><img src="https://play-lh.googleusercontent.com/Ko1_P7XdIaS4CdA501ALnhdmyP4Cx-DrTu01Nlnu9MnQhcKiSJCg_wrsEUjOLphBO-kyv6MyJE-V9_jbYfeyizI=w480-h960" alt="ClockSureWise screenshot 3" loading="lazy" onerror="shotFail(this)"></button><button class="shot" type="button" data-full="https://play-lh.googleusercontent.com/CMcLBygqzsPPFyfPEaGy3gn0_RzlyLAOVfzdm9LqM_vvafnTNbzYI23juKiFfaxW1BcAsvpwu9DpQLzxg3QkIVU=w900-h1800" aria-label="Enlarge ClockSureWise screenshot 4"><img src="https://play-lh.googleusercontent.com/CMcLBygqzsPPFyfPEaGy3gn0_RzlyLAOVfzdm9LqM_vvafnTNbzYI23juKiFfaxW1BcAsvpwu9DpQLzxg3QkIVU=w480-h960" alt="ClockSureWise screenshot 4" loading="lazy" onerror="shotFail(this)"></button><button class="shot" type="button" data-full="https://play-lh.googleusercontent.com/HdJR5X4vI48i7qNN6TloFWg-j1Pc4H0Iq6d6sqS5y_Gaani_k9eWrAVgY9oWXbe7qg4KnMqvOKHFyD4cZ8iYeuo=w900-h1800" aria-label="Enlarge ClockSureWise screenshot 5"><img src="https://play-lh.googleusercontent.com/HdJR5X4vI48i7qNN6TloFWg-j1Pc4H0Iq6d6sqS5y_Gaani_k9eWrAVgY9oWXbe7qg4KnMqvOKHFyD4cZ8iYeuo=w480-h960" alt="ClockSureWise screenshot 5" loading="lazy" onerror="shotFail(this)"></button>
+        </div>
+        <p class="rail-note">Screenshots from Google Play. Select one to enlarge.</p>
+      </div>
+    </article>
+    <article class="app" id="vibe360">
+      <div class="app-body">
+        <header class="app-head">
+          <span class="app-icon" aria-hidden="true"><span class="mono-letter">V</span><img src="https://play-lh.googleusercontent.com/OHfj79c5uLXzWHELny156YrRN3wpF8P4PMpVC_gIH9mAo6YS45rV2ijn037JQx5Cse8FN_h91c6whOy0c2YooA=w240-h240" alt="" width="120" height="120" onerror="this.remove()"></span>
+          <div class="app-title">
+            <h3>Vibe360</h3>
+            <p class="app-meta">Health · Android</p>
+          </div>
+        </header>
+        <p class="app-about">A confidential virtual health space for adolescents and young people in Nigeria, with HIV information, peer support and a route into care.</p>
+        <ul class="facts"><li>Supported by PEPFAR and 360HSDI</li></ul>
+        <h4>In the app</h4>
+        <ul class="part"><li>Confidential access to HIV services and health information.</li><li>Peer support from trained counsellors.</li><li>A finder for trusted local clinics.</li></ul>
+        <div class="app-foot">
+          <div class="stores"><a class="store" href="https://play.google.com/store/apps/details?id=com.vibes360.app" target="_blank" rel="noopener">Google Play<span aria-hidden="true"> ↗</span></a></div>
+          <code class="pkg">com.vibes360.app</code>
+        </div>
+      </div>
+      <div class="rail-wrap">
+        <div class="rail" tabindex="0" role="group" aria-label="Vibe360 screenshots from Google Play">
+          <button class="shot" type="button" data-full="https://play-lh.googleusercontent.com/rEIwswskmK-Ouolsp0VZruC1u55DrcxvRorZZqPx1tJzR3uWcWy-VnShq8k5y9rKz_4C-QGT5M_P3uJeNkv45A=w900-h1800" aria-label="Enlarge Vibe360 screenshot 1"><img src="https://play-lh.googleusercontent.com/rEIwswskmK-Ouolsp0VZruC1u55DrcxvRorZZqPx1tJzR3uWcWy-VnShq8k5y9rKz_4C-QGT5M_P3uJeNkv45A=w480-h960" alt="Vibe360 screenshot 1" loading="lazy" onerror="shotFail(this)"></button><button class="shot" type="button" data-full="https://play-lh.googleusercontent.com/6brwjiL0m-oDeNNAMXBmaF8By8BLIoxD8EzPkzJIJU-AFUF-GfWb2fcNzC0ee5tUmOoRRVeZ_FQkeQtHth-5yvs=w900-h1800" aria-label="Enlarge Vibe360 screenshot 2"><img src="https://play-lh.googleusercontent.com/6brwjiL0m-oDeNNAMXBmaF8By8BLIoxD8EzPkzJIJU-AFUF-GfWb2fcNzC0ee5tUmOoRRVeZ_FQkeQtHth-5yvs=w480-h960" alt="Vibe360 screenshot 2" loading="lazy" onerror="shotFail(this)"></button><button class="shot" type="button" data-full="https://play-lh.googleusercontent.com/pFl4S5e6aupUXMqeyINHpogV5BtbEQX8TbphMSSAngRlOR3g8iz_CiguA_SUK7ybY-HrTWVqiaoLPKhhyK6QL3E=w900-h1800" aria-label="Enlarge Vibe360 screenshot 3"><img src="https://play-lh.googleusercontent.com/pFl4S5e6aupUXMqeyINHpogV5BtbEQX8TbphMSSAngRlOR3g8iz_CiguA_SUK7ybY-HrTWVqiaoLPKhhyK6QL3E=w480-h960" alt="Vibe360 screenshot 3" loading="lazy" onerror="shotFail(this)"></button><button class="shot" type="button" data-full="https://play-lh.googleusercontent.com/PzCqoor5fZ8lQP3qmN760o1Qm8cxLbaw11qWGO5iCF7jmaBEolYgjt1uatOzGydubIgfn3OMCl-VzKZ_GKg4jw=w900-h1800" aria-label="Enlarge Vibe360 screenshot 4"><img src="https://play-lh.googleusercontent.com/PzCqoor5fZ8lQP3qmN760o1Qm8cxLbaw11qWGO5iCF7jmaBEolYgjt1uatOzGydubIgfn3OMCl-VzKZ_GKg4jw=w480-h960" alt="Vibe360 screenshot 4" loading="lazy" onerror="shotFail(this)"></button><button class="shot" type="button" data-full="https://play-lh.googleusercontent.com/4h6rP-C1mY-FEvGjEFv3hxcSyCv7_d0x0QfDM3n87IK4RWqFEdyvq4Sze7VsjPlwSx3kwZpfvYPnIMdWtPDjdw=w900-h1800" aria-label="Enlarge Vibe360 screenshot 5"><img src="https://play-lh.googleusercontent.com/4h6rP-C1mY-FEvGjEFv3hxcSyCv7_d0x0QfDM3n87IK4RWqFEdyvq4Sze7VsjPlwSx3kwZpfvYPnIMdWtPDjdw=w480-h960" alt="Vibe360 screenshot 5" loading="lazy" onerror="shotFail(this)"></button>
+        </div>
+        <p class="rail-note">Screenshots from Google Play. Select one to enlarge.</p>
+      </div>
+    </article>
+    <article class="app" id="icoba">
+      <div class="app-body">
+        <header class="app-head">
+          <span class="app-icon" aria-hidden="true"><span class="mono-letter">I</span><img src="https://play-lh.googleusercontent.com/QLaOBVbxHHZkoK6udkkWkoxvQQ7i9qg4zcnFH2YUimJm0RoKFg9zfTxZa6R1zqWo4URst7gl_B-WreQMxmTM4uM=w240-h240" alt="" width="120" height="120" onerror="this.remove()"></span>
+          <div class="app-title">
+            <h3>Icoba</h3>
+            <p class="app-meta">Community · Android · iOS</p>
+          </div>
+        </header>
+        <p class="app-about">The alumni app for Igbobi College Old Boys Association, built to keep graduates connected wherever they live.</p>
+        
+        <h4>In the app</h4>
+        <ul class="part"><li>A searchable alumni directory with professional networking.</li><li>Event management and digital archives.</li><li>Giving and philanthropy tracking behind a personal dashboard.</li></ul>
+        <div class="app-foot">
+          <div class="stores"><a class="store" href="https://play.google.com/store/apps/details?id=com.icoba.icoba&amp;hl=en" target="_blank" rel="noopener">Google Play<span aria-hidden="true"> ↗</span></a><a class="store" href="https://apps.apple.com/us/app/icoba-alumni/id6823156589" target="_blank" rel="noopener">App Store<span aria-hidden="true"> ↗</span></a></div>
+          <code class="pkg">com.icoba.icoba</code>
+        </div>
+      </div>
+      <div class="rail-wrap">
+        <div class="rail" tabindex="0" role="group" aria-label="Icoba screenshots from Google Play">
+          <button class="shot" type="button" data-full="https://play-lh.googleusercontent.com/hwaSJBFGvuCfZyoYRhNYCqbyFqzQRzD8Ht_u_nEUevBv9MVou_zL5F_alFZ-OdsadDFha_HrZU1spPUrD1OuBg=w900-h1800" aria-label="Enlarge Icoba screenshot 1"><img src="https://play-lh.googleusercontent.com/hwaSJBFGvuCfZyoYRhNYCqbyFqzQRzD8Ht_u_nEUevBv9MVou_zL5F_alFZ-OdsadDFha_HrZU1spPUrD1OuBg=w480-h960" alt="Icoba screenshot 1" loading="lazy" onerror="shotFail(this)"></button><button class="shot" type="button" data-full="https://play-lh.googleusercontent.com/I-SlS0Bwr--TPQK-CRDk80x4TwKzSXPx1r6MkT_4-Sfi75XmtMqODUIEQ7kiDzkqYcpTqQNgZE8SH7eM5QXBPY0=w900-h1800" aria-label="Enlarge Icoba screenshot 2"><img src="https://play-lh.googleusercontent.com/I-SlS0Bwr--TPQK-CRDk80x4TwKzSXPx1r6MkT_4-Sfi75XmtMqODUIEQ7kiDzkqYcpTqQNgZE8SH7eM5QXBPY0=w480-h960" alt="Icoba screenshot 2" loading="lazy" onerror="shotFail(this)"></button><button class="shot" type="button" data-full="https://play-lh.googleusercontent.com/mTA6JWM-F25kyHsXfthJTtXBMOvMClIt1lM54VfzSlQhHmICYAmKiI2sDI_iEHYRVNuRccF-9b_T6ZdzAa1kS8k=w900-h1800" aria-label="Enlarge Icoba screenshot 3"><img src="https://play-lh.googleusercontent.com/mTA6JWM-F25kyHsXfthJTtXBMOvMClIt1lM54VfzSlQhHmICYAmKiI2sDI_iEHYRVNuRccF-9b_T6ZdzAa1kS8k=w480-h960" alt="Icoba screenshot 3" loading="lazy" onerror="shotFail(this)"></button><button class="shot" type="button" data-full="https://play-lh.googleusercontent.com/64M5CIn8lEdBw-eaRnO3mRlDdlrVUyG5XmFz0qpyYYgfv1GbzHrPso4eQRNrR2VLutma3wR6KGOZW_8sgWb59A=w900-h1800" aria-label="Enlarge Icoba screenshot 4"><img src="https://play-lh.googleusercontent.com/64M5CIn8lEdBw-eaRnO3mRlDdlrVUyG5XmFz0qpyYYgfv1GbzHrPso4eQRNrR2VLutma3wR6KGOZW_8sgWb59A=w480-h960" alt="Icoba screenshot 4" loading="lazy" onerror="shotFail(this)"></button><button class="shot" type="button" data-full="https://play-lh.googleusercontent.com/0h7F4sVpzN3Hjtxsxqcdh8KvZ2StX4sekfn5EjhQ0ZHlK7KSdiRhtXIoF5lJgwLpKliM7T2vY-R4qSwshNLe0Bw=w900-h1800" aria-label="Enlarge Icoba screenshot 5"><img src="https://play-lh.googleusercontent.com/0h7F4sVpzN3Hjtxsxqcdh8KvZ2StX4sekfn5EjhQ0ZHlK7KSdiRhtXIoF5lJgwLpKliM7T2vY-R4qSwshNLe0Bw=w480-h960" alt="Icoba screenshot 5" loading="lazy" onerror="shotFail(this)"></button>
+        </div>
+        <p class="rail-note">Screenshots from Google Play. Select one to enlarge.</p>
+      </div>
+    </article>
+    </div>
+  </section>
+
+  <section class="section" id="experience" aria-labelledby="exp-title">
+    <div class="section-head">
+      <p class="eyebrow">Experience</p>
+      <h2 id="exp-title">Work history.</h2>
+      <p>Every role since 2019, newest first.</p>
+    </div>
+    <ol class="roles">
+      
+      <li class="role">
+        <p class="role-dates">Aug 2024 – Present<span class="now">Current</span></p>
+        <div class="role-main">
+          <h3>Mobile Team Lead</h3>
+          <p class="role-org">SBSC · Remote, Nigeria</p>
+          <ul><li>Coordinate and guide the mobile team so projects ship on time and to a high standard.</li><li>Took 5+ projects to production readiness within 16 months.</li><li>Work with cross-functional teams to build the core functionality clients ask for.</li><li>Run code reviews to hold coding standards and improve performance.</li></ul>
+        </div>
+      </li>
+      <li class="role">
+        <p class="role-dates">Sep 2022 – Jun 2024</p>
+        <div class="role-main">
+          <h3>Senior Mobile Developer (Contract)</h3>
+          <p class="role-org">Kaiglo · Remote, Nigeria</p>
+          <ul><li>Built an e-commerce app that has passed 100k downloads on Google Play and the App Store.</li><li>Maintained and improved core application stability in production.</li><li>Refined in-app messages, alerts and visual cues, which reduced customer support inquiries.</li></ul>
+        </div>
+      </li>
+      <li class="role">
+        <p class="role-dates">Sep 2021 – Apr 2024</p>
+        <div class="role-main">
+          <h3>Lead Mobile Developer</h3>
+          <p class="role-org">Moni Africa · Remote, Nigeria</p>
+          <ul><li>Stabilised the version 1 app, cutting crash rates by 45% and improving stability and usability.</li><li>Built wallet and savings features that grew revenue by improving repayment success rate by 40%.</li><li>Led the mobile team that delivered version 2, which passed 40,000 downloads within six months of release.</li><li>Built a peer-to-peer transfer feature that 47% of active users used in its first three months.</li></ul>
+        </div>
+      </li>
+      <li class="role">
+        <p class="role-dates">Aug 2019 – Sep 2021</p>
+        <div class="role-main">
+          <h3>Mobile Developer</h3>
+          <p class="role-org">SBSC · On-site, Nigeria</p>
+          <ul><li>Worked with backend, design and QA teams to deliver projects at a 95% on-time rate with high client satisfaction.</li><li>Improved app performance through efficient rendering and caching, for 25–35% faster load times.</li><li>Took part in client demos, testing and production releases that met Google Play and App Store standards, with a zero post-launch crash rate for several apps.</li></ul>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <section class="section" id="toolkit" aria-labelledby="kit-title">
+    <div class="section-head">
+      <p class="eyebrow">Toolkit</p>
+      <h2 id="kit-title">What I build with.</h2>
+    </div>
+    <div class="kit">
+      <dl class="table">
+        <div class="row"><dt>Languages and frameworks</dt><dd><span>Flutter</span><span>Dart</span><span>Java</span><span>Kotlin</span></dd></div><div class="row"><dt>State management</dt><dd><span>BLoC</span><span>Riverpod</span><span>Redux</span><span>Provider</span><span>GetX</span></dd></div><div class="row"><dt>Backend and realtime</dt><dd><span>Firebase</span><span>REST APIs</span><span>WebSockets</span><span>Pusher</span></dd></div><div class="row"><dt>Push notifications</dt><dd><span>FCM</span><span>OneSignal</span></dd></div><div class="row"><dt>Deep linking</dt><dd><span>Branch.io</span><span>Custom URL schemes</span></dd></div><div class="row"><dt>Error tracking</dt><dd><span>Firebase Crashlytics</span><span>Sentry</span></dd></div><div class="row"><dt>Analytics</dt><dd><span>Google Analytics</span><span>Facebook Analytics</span><span>CX-Cam</span></dd></div><div class="row"><dt>Testing</dt><dd><span>Unit tests</span><span>Mockito</span></dd></div><div class="row"><dt>Delivery</dt><dd><span>Git</span><span>CI/CD pipelines</span></dd></div>
+      </dl>
+      <div class="side">
+        <div class="note">
+          <p class="eyebrow">Education</p>
+          <h3>Obafemi Awolowo University</h3>
+          <p>Bachelor's in Computer Engineering</p>
+          <p>Osun, Nigeria · April 2017</p>
+        </div>
+        <div class="note">
+          <p class="eyebrow">How I work</p>
+          <ul class="ways">
+            <li>Technical leadership and mentoring junior developers</li>
+            <li>Stakeholder management</li>
+            <li>Goal-oriented and detail-focused</li>
+            <li>A positive, collaborative attitude</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="contact" id="contact" aria-labelledby="contact-title">
+    <div class="contact-copy">
+      <p class="eyebrow">Contact</p>
+      <h2 id="contact-title">Have an app to ship? Let’s build it together.</h2>
+      <p>I'm based in Nigeria and work remotely.</p>
+    </div>
+    <ul class="reach">
+      <li>
+        <span class="reach-label">Email</span>
+        <a href="mailto:dejbaba@gmail.com">dejbaba@gmail.com</a>
+        <button class="copy" type="button" data-copy="dejbaba@gmail.com">Copy</button>
+      </li>
+      <li>
+        <span class="reach-label">Phone</span>
+        <a href="tel:+2349021074117">+234 902 107 4117</a>
+        <button class="copy" type="button" data-copy="+2349021074117">Copy</button>
+      </li>
+      <li>
+        <span class="reach-label">LinkedIn</span>
+        <a href="https://www.linkedin.com/in/ayodeji-ogundijo" target="_blank" rel="noopener">linkedin.com/in/ayodeji-ogundijo</a>
+        <button class="copy" type="button" data-copy="https://www.linkedin.com/in/ayodeji-ogundijo">Copy</button>
+      </li>
+    </ul>
+  </section>
+
+</main>
+
+<footer class="wrap">
+  <p>© 2026 Ayodeji Ogundijo</p>
+  <p>App names, icons and screenshots belong to their publishers and are shown from their public store listings.</p>
+</footer>
+
+<dialog class="viewer" id="viewer" aria-label="Screenshot">
+  <button class="viewer-close" type="button" id="viewer-close" aria-label="Close screenshot">×</button>
+  <img id="viewer-img" src="" alt="">
+</dialog>
+
+<script>
+(function () {
+  var root = document.documentElement;
+
+  /* Theme toggle: flips whichever theme is showing and remembers the choice. */
+  var toggle = document.getElementById('theme-toggle');
+  function currentTheme() {
+    var set = root.getAttribute('data-theme');
+    if (set) return set;
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  function labelToggle() {
+    toggle.setAttribute('aria-label', currentTheme() === 'dark' ? 'Switch to light theme' : 'Switch to dark theme');
+  }
+  toggle.addEventListener('click', function () {
+    var next = currentTheme() === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    try { localStorage.setItem('theme', next); } catch (err) {}
+    labelToggle();
+  });
+  labelToggle();
+
+  /* Copy buttons. */
+  document.querySelectorAll('.copy').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var text = btn.getAttribute('data-copy');
+      function done() {
+        btn.textContent = 'Copied';
+        setTimeout(function () { btn.textContent = 'Copy'; }, 1600);
+      }
+      function selectInstead() {
+        var link = btn.parentElement.querySelector('a');
+        var range = document.createRange();
+        range.selectNodeContents(link);
+        var sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done, selectInstead);
+      } else {
+        selectInstead();
+      }
+    });
+  });
+
+  /* Screenshot viewer. */
+  var viewer = document.getElementById('viewer');
+  var viewerImg = document.getElementById('viewer-img');
+  document.querySelectorAll('.shot').forEach(function (shot) {
+    shot.addEventListener('click', function () {
+      var thumb = shot.querySelector('img');
+      if (!thumb || !viewer.showModal) return;
+      viewerImg.alt = thumb.alt;
+      viewerImg.onerror = function () { viewerImg.onerror = null; viewerImg.src = thumb.src; };
+      viewerImg.src = shot.getAttribute('data-full') || thumb.src;
+      viewer.showModal();
+    });
+  });
+  document.getElementById('viewer-close').addEventListener('click', function () { viewer.close(); });
+  viewer.addEventListener('click', function (event) { if (event.target === viewer) viewer.close(); });
+})();
+</script>
+</body>
+</html>
